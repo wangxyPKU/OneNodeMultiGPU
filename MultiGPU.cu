@@ -119,6 +119,24 @@ int DataSave(float *fai, int M, int N)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// Device information
+////////////////////////////////////////////////////////////////////////////////
+void GetDeviceName(count) 
+{ 
+
+    cudaDeviceProp prop;
+    if (count== 0)
+    {
+        cout<< "There is no device."<< endl;
+    }
+    for(int i= 0;i< count;++i)
+    {
+        cudaGetDeviceProperties(&prop,i) ;
+        cout << "Device "<<i<<" name is :" << prop.name<< endl;
+    } 
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // Program main
 ////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char **argv)
@@ -148,19 +166,21 @@ int main(int argc, char **argv)
     }
 
     cout<<"CUDA-capable device count: "<<GPU_N<<endl;
+    GetDeviceName(GPU_N);
   
-	cout<<"Initializing data..."<<endl;    
+	cout<<"Initializing data...\n"<<endl;    
     HSIZE = (H+2) * W;
     
     checkCudaErrors(cudaMallocHost((void**)&fai_T, HSIZE*sizeof(float)));
     DataInitial(fai_T, HSIZE, H, W);
     
+    cout<<"Start timing..."<<endl;
     StartTimer();
     //Get data sizes for each GPU
     DH = H / GPU_N + 2;
     DW = W;
- 
     //Subdividing total data across GPUs, Create streams for issuing GPU command asynchronously and allocate memory (GPU and System page-locked)
+    
     for (i = 0; i < GPU_N; i++){
 
 	    G[i].fai_h = fai_T + i * (H / GPU_N) * W;
@@ -263,9 +283,12 @@ int main(int argc, char **argv)
     cout<<"    GPU Processing time: "<<GetTimer()/1e3<<"(s)"<<endl;
 
     // Compute on Host CPU
-    cout<<"Saving data..."<<endl;
-    if(DataSave(fai_T + W, H, W))
-	cout<<"    Saving completed\n"<<endl;
+    if(argc==2){
+        cout<<"Saving data..."<<endl;
+        if(DataSave(fai_T + W, H, W))
+        cout<<"    Saving completed\n"<<endl;
+    }
+
     //clean up
     checkCudaErrors(cudaFreeHost(fai_T));
 
