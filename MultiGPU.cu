@@ -121,14 +121,10 @@ int DataSave(float *fai, int M, int N)
 ////////////////////////////////////////////////////////////////////////////////
 // Device information
 ////////////////////////////////////////////////////////////////////////////////
-void GetDeviceName(count) 
+void GetDeviceName(int count) 
 { 
 
     cudaDeviceProp prop;
-    if (count== 0)
-    {
-        cout<< "There is no device."<< endl;
-    }
     for(int i= 0;i< count;++i)
     {
         cudaGetDeviceProperties(&prop,i) ;
