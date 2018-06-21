@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <sys/time.h>
 
 // CUDA runtime
 #include <cuda_runtime.h>
@@ -144,6 +145,8 @@ int main(int argc, char **argv)
     size_t pitch;
     int H,W,DH,DW,DWP;
     float *fai_T;
+    struct timeval start,end;
+    double timeuse;
 
     cout<<"\nPlease input grids number (height, width): "<<endl;
     cin>>H>>W;
@@ -171,7 +174,9 @@ int main(int argc, char **argv)
     DataInitial(fai_T, HSIZE, H, W);
     
     cout<<"Start timing..."<<endl;
-    StartTimer();
+    //StartTimer();
+    gettimeofday(&start, NULL);
+
     //Get data sizes for each GPU
     DH = H / GPU_N + 2;
     DW = W;
@@ -276,7 +281,9 @@ int main(int argc, char **argv)
         checkCudaErrors(cudaStreamDestroy(G[i].stream));
     }
 
-    cout<<"    GPU Processing time: "<<GetTimer()/1e3<<"(s)"<<endl;
+    gettimeofday(&end, NULL);
+    timeuse=end.tv_sec-start.tv_sec + (end.tv_usec-start.tv_usec)/1e6;
+    cout<<"    GPU Processing time: "<<timeuse<<"(s)"<<endl;
 
     // Compute on Host CPU
     if(argc==2){
